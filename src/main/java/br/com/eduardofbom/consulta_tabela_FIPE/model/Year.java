@@ -1,24 +1,23 @@
 package br.com.eduardofbom.consulta_tabela_FIPE.model;
 
-public class Brand {
+public class Year {
 
     private Integer code;
     private String description;
 
-    public Brand(Integer code, String description) {
+    public Year(Integer code, String description) {
         this.code = code;
         this.description = description;
     }
-    public Brand(DataBrand dataBrand) {
+    public Year(DataYear dataYear) {
 //        try {
-        this.code = Integer.parseInt(dataBrand.code());
+        this.code = code;
 //        } catch (RuntimeException ex) {
 //            System.out.println(ex.getMessage());
 //            this.code = 0;
 //        }
-        this.description = dataBrand.description();
+        this.description = description;
     }
-
 
     @Override
     public String toString() {

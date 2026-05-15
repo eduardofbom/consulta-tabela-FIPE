@@ -5,5 +5,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record DataBrand(@JsonProperty("codigo") String code,
-                        @JsonProperty("nome") String name) {
+                        @JsonProperty("nome") String description) {
 }
