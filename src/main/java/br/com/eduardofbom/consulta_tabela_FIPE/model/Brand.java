@@ -10,15 +10,22 @@ public class Brand {
         this.description = description;
     }
     public Brand(DataBrand dataBrand) {
-//        try {
-        this.code = Integer.parseInt(dataBrand.code());
-//        } catch (RuntimeException ex) {
-//            System.out.println(ex.getMessage());
-//            this.code = 0;
-//        }
+        try {
+            this.code = Integer.parseInt(dataBrand.code());
+        } catch (NumberFormatException ex) {
+            System.out.println(ex.getMessage());
+            this.code = 0;
+        }
         this.description = dataBrand.description();
     }
 
+    public Integer getCode() {
+        return code;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 
     @Override
     public String toString() {

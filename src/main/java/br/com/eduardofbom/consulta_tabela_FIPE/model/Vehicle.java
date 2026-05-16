@@ -40,6 +40,34 @@ public class Vehicle {
         this.codeFipeVeh = dataVehicle.codeFipeVeh();
     }
 
+    public Integer getVehicleTypeVeh() {
+        return vehicleTypeVeh;
+    }
+
+    public String getValueVeh() {
+        return valueVeh;
+    }
+
+    public String getBrandVeh() {
+        return brandVeh;
+    }
+
+    public String getModelVeh() {
+        return modelVeh;
+    }
+
+    public Integer getYearVeh() {
+        return yearVeh;
+    }
+
+    public String getFuelTypeVeh() {
+        return fuelTypeVeh;
+    }
+
+    public String getCodeFipeVeh() {
+        return codeFipeVeh;
+    }
+
     @Override
     public String toString() {
         return "Vehicle{" +

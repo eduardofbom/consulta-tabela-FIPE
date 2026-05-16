@@ -19,6 +19,14 @@ public class Model {
         this.description = dataModel.description();
     }
 
+    public Integer getCode() {
+        return code;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
     @Override
     public String toString() {
         return "code=" + code +

@@ -10,13 +10,13 @@ public class DataConversion {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public <T> T getData(String json, Class<T> tClass) {
-        return mapper.convertValue(json, tClass);
+    public <T> T getData(String json, Class<T> tClass) throws JsonProcessingException {
+        return mapper.readValue(json, tClass);
     }
 
     public <T> List<T> getDataList(String json, Class<T> tClass) throws JsonProcessingException {
         return mapper.readValue(json,
-                new TypeReference<List<T>>(){});
+                mapper.getTypeFactory().constructCollectionType(List.class, tClass));
     }
 
 }

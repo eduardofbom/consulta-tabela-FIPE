@@ -1,16 +1,14 @@
 package br.com.eduardofbom.consulta_tabela_FIPE.principal;
 
-import br.com.eduardofbom.consulta_tabela_FIPE.model.Brand;
-import br.com.eduardofbom.consulta_tabela_FIPE.model.DataBrand;
+import br.com.eduardofbom.consulta_tabela_FIPE.model.*;
 import br.com.eduardofbom.consulta_tabela_FIPE.service.ApiConsumption;
 import br.com.eduardofbom.consulta_tabela_FIPE.service.DataConversion;
 import br.com.eduardofbom.consulta_tabela_FIPE.service.MenuAction;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -25,17 +23,60 @@ public class Principal {
 
         menuAction.showInitial();
         String userTypeVehicle = URLEncoder.encode(scanner.nextLine().toLowerCase());
-        String uriAddressUser = uriAddressBase + userTypeVehicle + "/marcas/";
+        String uriAddressUserTypeVehicle = uriAddressBase + userTypeVehicle + "/marcas/";
 
-        String jsonBrandResponse = apiConsumption.consume(uriAddressUser);
-        System.out.println(jsonBrandResponse);
+        String jsonBrandsResponse = apiConsumption.consume(uriAddressUserTypeVehicle);
 
-        List<DataBrand> dataBrandList = converter.getDataList(jsonBrandResponse, DataBrand.class);
+        List<DataBrand> dataBrandList = converter.getDataList(jsonBrandsResponse, DataBrand.class);
         List<Brand> brandList = new ArrayList<>();
         for (DataBrand dataBrand : dataBrandList) {
             brandList.add(new Brand(dataBrand));
         }
-        System.out.println(brandList);
+        brandList.stream()
+                .sorted(Comparator.comparing(Brand::getCode))
+                .forEach(System.out::println);
+
+        System.out.println("\nEnter the brand code:");
+        String userBrandCode = URLEncoder.encode(scanner.nextLine().toLowerCase());
+        String uriAddressUserBrandCode = uriAddressUserTypeVehicle + userBrandCode + "/modelos/";
+
+        String jsonModelsResponse = apiConsumption.consume(uriAddressUserBrandCode);
+        DataModelResponse dataModelResponse = converter.getData(jsonModelsResponse, DataModelResponse.class);
+        List<Model> modelsList = new ArrayList<>();
+        for (DataModel dataModel : dataModelResponse.models()) {
+            modelsList.add(new Model(dataModel));
+        }
+        modelsList.stream()
+                .sorted(Comparator.comparing(Model::getCode))
+                .forEach(System.out::println);
+
+        System.out.println("\nEnter a portion of the vehicle's name:");
+        String userModelName = scanner.nextLine().toLowerCase();
+        String userModeNameEncode = URLEncoder.encode(userModelName);
+        modelsList.stream()
+                .filter(m -> m.getDescription().toLowerCase().contains(userModelName))
+                .forEach(System.out::println);
+
+        System.out.println("Enter a model code:");
+        String userModelCode = URLEncoder.encode(scanner.nextLine().toLowerCase());
+
+        String uriAddressUserModelCode = uriAddressUserBrandCode + userModelCode + "/anos/";
+
+        String jsonModelsCodeResponse = apiConsumption.consume(uriAddressUserModelCode);
+        System.out.println(jsonModelsCodeResponse);
+        List<DataYear> dataYearList = converter.getDataList(jsonModelsCodeResponse, DataYear.class);
+        List<Year> yearList = new ArrayList<>();
+        for (DataYear dataYear : dataYearList) {
+            yearList.add(new Year(dataYear));
+        }
+        yearList.forEach(System.out::println);
+        yearList.stream()
+                .map(y -> {
+                    String uriAddressCode = y.getCode();
+                    ...
+                })
+                .forEach(System.out::println);
+
 
     }
 
