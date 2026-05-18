@@ -63,17 +63,22 @@ public class Principal {
         String uriAddressUserModelCode = uriAddressUserBrandCode + userModelCode + "/anos/";
 
         String jsonModelsCodeResponse = apiConsumption.consume(uriAddressUserModelCode);
-        System.out.println(jsonModelsCodeResponse);
+
         List<DataYear> dataYearList = converter.getDataList(jsonModelsCodeResponse, DataYear.class);
         List<Year> yearList = new ArrayList<>();
         for (DataYear dataYear : dataYearList) {
             yearList.add(new Year(dataYear));
         }
-        yearList.forEach(System.out::println);
         yearList.stream()
                 .map(y -> {
-                    String uriAddressCode = y.getCode();
-                    ...
+                    String uriAddressCode = uriAddressUserModelCode + y.getCode();
+                    try {
+                        String jsonVehiclesResponse = apiConsumption.consume(uriAddressCode);
+                        DataVehicle dataVehicle = converter.getData(jsonVehiclesResponse, DataVehicle.class);
+                        return new Vehicle(dataVehicle);
+                    } catch (IOException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 })
                 .forEach(System.out::println);
 
