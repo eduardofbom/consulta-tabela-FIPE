@@ -8,7 +8,6 @@ import br.com.eduardofbom.consulta_tabela_FIPE.service.MenuAction;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -16,24 +15,35 @@ public class Principal {
     private final ApiConsumption apiConsumption = new ApiConsumption();
     private final MenuAction menuAction = new MenuAction();
     private final Scanner scanner = new Scanner(System.in);
+    private final String uriAddressBase = "https://parallelum.com.br/fipe/api/v1/";
 
     public void showMenu() throws IOException, InterruptedException {
 
-        String uriAddressBase = "https://parallelum.com.br/fipe/api/v1/";
+
+        Map<Integer,String> vehicleTypeMap = Map.of(1, "carros", 2, "motos", 3, "caminhoes");
 
         menuAction.showInitial();
-        String userTypeVehicle = URLEncoder.encode(scanner.nextLine().toLowerCase());
-        String uriAddressUserTypeVehicle = uriAddressBase + userTypeVehicle + "/marcas/";
+        String userTypeVehicle = scanner.nextLine();
+
+        String typeVehicle;
+        if (vehicleTypeMap.get(1).contains(userTypeVehicle.toLowerCase())) typeVehicle = vehicleTypeMap.get(1);
+        else if (vehicleTypeMap.get(2).contains(userTypeVehicle.toLowerCase())) typeVehicle = vehicleTypeMap.get(2);
+        else if (vehicleTypeMap.get(3).contains(userTypeVehicle.toLowerCase())) typeVehicle = vehicleTypeMap.get(3);
+        else {
+            System.out.println("Invalid option. Please try again.");
+            return;
+        }
+        String uriAddressUserTypeVehicle = uriAddressBase + typeVehicle + "/marcas/";
 
         String jsonBrandsResponse = apiConsumption.consume(uriAddressUserTypeVehicle);
 
-        List<DataBrand> dataBrandList = converter.getDataList(jsonBrandsResponse, DataBrand.class);
-        List<Brand> brandList = new ArrayList<>();
-        for (DataBrand dataBrand : dataBrandList) {
-            brandList.add(new Brand(dataBrand));
+        List<DataResponse> dataBrandList = converter.getList(jsonBrandsResponse, DataResponse.class);
+        List<Data> brandList = new ArrayList<>();
+        for (DataResponse dataBrand : dataBrandList) {
+            brandList.add(new Data(dataBrand));
         }
         brandList.stream()
-                .sorted(Comparator.comparing(Brand::getCode))
+                .sorted(Comparator.comparing(Data::getDescription))
                 .forEach(System.out::println);
 
         System.out.println("\nEnter the brand code:");
@@ -41,13 +51,13 @@ public class Principal {
         String uriAddressUserBrandCode = uriAddressUserTypeVehicle + userBrandCode + "/modelos/";
 
         String jsonModelsResponse = apiConsumption.consume(uriAddressUserBrandCode);
-        DataModelResponse dataModelResponse = converter.getData(jsonModelsResponse, DataModelResponse.class);
-        List<Model> modelsList = new ArrayList<>();
-        for (DataModel dataModel : dataModelResponse.models()) {
-            modelsList.add(new Model(dataModel));
+        ModelResponse dataModelResponse = converter.getData(jsonModelsResponse, ModelResponse.class);
+        List<Data> modelsList = new ArrayList<>();
+        for (DataResponse modelResponse : dataModelResponse.models()) {
+            modelsList.add(new Data(modelResponse));
         }
         modelsList.stream()
-                .sorted(Comparator.comparing(Model::getCode))
+                .sorted(Comparator.comparing(Data::getDescription))
                 .forEach(System.out::println);
 
         System.out.println("\nEnter a portion of the vehicle's name:");
@@ -64,18 +74,18 @@ public class Principal {
 
         String jsonModelsCodeResponse = apiConsumption.consume(uriAddressUserModelCode);
 
-        List<DataYear> dataYearList = converter.getDataList(jsonModelsCodeResponse, DataYear.class);
-        List<Year> yearList = new ArrayList<>();
-        for (DataYear dataYear : dataYearList) {
-            yearList.add(new Year(dataYear));
+        List<DataResponse> yearResponseList = converter.getList(jsonModelsCodeResponse, DataResponse.class);
+        List<Data> yearList = new ArrayList<>();
+        for (DataResponse yearResponse : yearResponseList) {
+            yearList.add(new Data(yearResponse));
         }
         yearList.stream()
                 .map(y -> {
                     String uriAddressCode = uriAddressUserModelCode + y.getCode();
                     try {
                         String jsonVehiclesResponse = apiConsumption.consume(uriAddressCode);
-                        DataVehicle dataVehicle = converter.getData(jsonVehiclesResponse, DataVehicle.class);
-                        return new Vehicle(dataVehicle);
+                        VehicleResponse vehicleResponse = converter.getData(jsonVehiclesResponse, VehicleResponse.class);
+                        return new Vehicle(vehicleResponse);
                     } catch (IOException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
