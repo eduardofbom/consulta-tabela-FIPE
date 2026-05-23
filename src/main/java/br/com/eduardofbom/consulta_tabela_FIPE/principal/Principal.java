@@ -62,7 +62,6 @@ public class Principal {
 
         System.out.println("\nEnter a portion of the vehicle's name:");
         String userModelName = scanner.nextLine().toLowerCase();
-        String userModeNameEncode = URLEncoder.encode(userModelName);
         modelsList.stream()
                 .filter(m -> m.getDescription().toLowerCase().contains(userModelName))
                 .forEach(System.out::println);

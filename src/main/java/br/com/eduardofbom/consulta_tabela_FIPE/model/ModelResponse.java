@@ -6,6 +6,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ModelResponse(@JsonProperty("modelos") List<DataResponse> models,
-                            @JsonProperty("anos") List<DataResponse> years) {
+public record ModelResponse(@JsonProperty("modelos") List<DataResponse> models) {
 }
