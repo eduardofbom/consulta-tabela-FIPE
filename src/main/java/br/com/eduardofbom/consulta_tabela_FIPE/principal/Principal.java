@@ -30,7 +30,7 @@ public class Principal {
         else if (vehicleTypeMap.get(2).contains(userTypeVehicle.toLowerCase())) typeVehicle = vehicleTypeMap.get(2);
         else if (vehicleTypeMap.get(3).contains(userTypeVehicle.toLowerCase())) typeVehicle = vehicleTypeMap.get(3);
         else {
-            System.out.println("Invalid option. Please try again.");
+            System.out.println("Opcao invalida. Tente novamente.");
             return;
         }
         String uriAddressUserTypeVehicle = uriAddressBase + typeVehicle + "/marcas/";
@@ -46,7 +46,7 @@ public class Principal {
                 .sorted(Comparator.comparing(Data::getDescription))
                 .forEach(System.out::println);
 
-        System.out.println("\nEnter the brand code:");
+        System.out.println("\nInsira o codigo da marca:");
         String userBrandCode = URLEncoder.encode(scanner.nextLine().toLowerCase());
         String uriAddressUserBrandCode = uriAddressUserTypeVehicle + userBrandCode + "/modelos/";
 
@@ -60,13 +60,13 @@ public class Principal {
                 .sorted(Comparator.comparing(Data::getDescription))
                 .forEach(System.out::println);
 
-        System.out.println("\nEnter a portion of the vehicle's name:");
+        System.out.println("\nInsira parte do nome do veículo:");
         String userModelName = scanner.nextLine().toLowerCase();
         modelsList.stream()
                 .filter(m -> m.getDescription().toLowerCase().contains(userModelName))
                 .forEach(System.out::println);
 
-        System.out.println("Enter a model code:");
+        System.out.println("Insira o código do modelo:");
         String userModelCode = URLEncoder.encode(scanner.nextLine().toLowerCase());
 
         String uriAddressUserModelCode = uriAddressUserBrandCode + userModelCode + "/anos/";
