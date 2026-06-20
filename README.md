@@ -24,16 +24,16 @@ Arquitetura (visão geral)
 ------------------------
 
 ```mermaid
-flowchart LR
-  U[Usuário - terminal] --> CLI[ConsultaTabelaFipe - Spring Boot CLI]
-  CLI --> Menu[Menu (Scanner)]
-  Menu --> ApiConsumo[ApiConsumption (HttpClient)]
-  ApiConsumo --> FIPE[API Pública FIPE (parallelum)]
-  FIPE --> ApiConsumo
-  ApiConsumo --> Converter[DataConversion (Jackson)]
-  Converter --> Domain[Modelos de domínio (Data, Model, Year, Vehicle)]
-  Domain --> CLI
-  CLI --> Output[Console: listagem de avaliações por ano]
+flowchart TD
+    U["Usuário (terminal)"] --> CLI["ConsultaTabelaFipe (Spring Boot CLI)"]
+    CLI --> Menu["Menu (Scanner)"]
+    Menu --> ApiConsumo["ApiConsumption (HttpClient)"]
+    ApiConsumo --> FIPE["API Pública FIPE (parallelum)"]
+    FIPE --> ApiConsumo
+    ApiConsumo --> Converter["DataConversion (Jackson)"]
+    Converter --> Domain["Modelos de domínio (Data, Model, Year, Vehicle)"]
+    Domain --> CLI
+    CLI --> Output["Console: listagem de avaliações por ano"]
 ```
 
 Decisões de design e trade-offs
