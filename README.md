@@ -1,73 +1,122 @@
-# Desafio Java | Alura
-### Consultando a tabela FIPE
+ # Consulta Tabela FIPE
 
-Vamos implementar uma aplicação para consultar o valor médio de veículos (carros, motos ou caminhões) de acordo com a tabela FIPE, que pode ser acessada através [desse site](https://veiculos.fipe.org.br/).
+Uma aplicação CLI em Java 21 + Spring Boot para consultar a tabela FIPE e agregar avaliações históricas de veículos (marca → modelo → todos os anos disponíveis). Demonstra integração com APIs públicas, transformação de dados, tratamento de erros e apresentação limpa em console.
 
-- A consulta aos valores dos veículos pelo site tem o seguinte fluxo:
-- Primeiramente é necessário escolher o tipo do veículo: carro, moto ou caminhão.
+Problema resolvido
+---------------------------------
+Esta aplicação permite que um usuário selecione o tipo de veículo (carros, motos ou caminhões), escolha uma marca e um modelo e receba todas as avaliações históricas daquele modelo, consumindo a API pública FIPE. Soluciona a necessidade de agregar e apresentar em lote as avaliações por ano — útil para análises ou pipelines que dependam de valores históricos.
 
-![image](https://github.com/jacqueline-oliveira/3257-java-desafio/assets/66698429/c64bc1d1-2957-4bca-9965-0ce2bf9a6207)
+Motivação
+---------
+- Exercitar integração com APIs REST externas e desserialização JSON (Jackson).
+- Demonstrar uso de Java moderno (records, streams) e Spring Boot (CLI via CommandLineRunner).
+- Mostrar decisões de design para modelagem de dados e tratamento de conversões e erros.
 
+Stack tecnológica e papel de cada componente
+-------------------------------------------
+- Java 21 — linguagem principal, uso de features modernas (records, switch expressions).
+- Spring Boot 4 — execução da aplicação via `CommandLineRunner` e bootstrap do app.
+- Jackson (`jackson-databind`) — desserialização JSON para DTOs e entidades.
+- java.net.http.HttpClient — consumo HTTP das APIs públicas (sem dependências externas extras).
+- Maven (`mvn` / `./mvnw`) — build, dependências e execução.
 
-- Depois disso, é necessário preencher a MARCA, MODELO e ANO para consulta.
+Arquitetura (visão geral)
+------------------------
 
-![image](https://github.com/jacqueline-oliveira/3257-java-desafio/assets/66698429/6d85805f-d6b6-40e8-a65d-17cb13a740ed)
+```mermaid
+flowchart LR
+  U[Usuário - terminal] --> CLI[ConsultaTabelaFipe - Spring Boot CLI]
+  CLI --> Menu[Menu (Scanner)]
+  Menu --> ApiConsumo[ApiConsumption (HttpClient)]
+  ApiConsumo --> FIPE[API Pública FIPE (parallelum)]
+  FIPE --> ApiConsumo
+  ApiConsumo --> Converter[DataConversion (Jackson)]
+  Converter --> Domain[Modelos de domínio (Data, Model, Year, Vehicle)]
+  Domain --> CLI
+  CLI --> Output[Console: listagem de avaliações por ano]
+```
 
+Decisões de design e trade-offs
+-------------------------------
+- Organização simples de pacotes: `model` (DTOs/entidades), `service` (consumo/transformação) e `principal` (orquestração CLI) — facilita leitura e é suficiente para este escopo.
+- `record` para DTOs (responses) reduz boilerplate e torna claro o contrato de entrada JSON.
+- Conversão para classes POJO de domínio permite tratamento de exceções (ex.: NumberFormatException) e enriquecimento de dados.
+- As requisições por ano são executadas sequencialmente (simplicidade). Para produção, consideraria chamadas assíncronas controladas (CompletableFuture) com limite de concorrência.
 
-- Por fim, é exibida a avaliação apenas daquele ano escolhido.
+Contratos e API pública consumida
+---------------------------------
+API pública base (documentação): https://deividfortuna.github.io/fipe/
 
-  ![image](https://github.com/jacqueline-oliveira/3257-java-desafio/assets/66698429/94910321-15ed-49fe-bffc-25e1c4ab52dc)
+Principais endpoints usados:
 
+- Listar marcas: `GET https://parallelum.com.br/fipe/api/v1/{tipo}/marcas`
+- Listar modelos: `GET https://parallelum.com.br/fipe/api/v1/{tipo}/marcas/{codigoMarca}/modelos`
+- Listar anos: `GET https://parallelum.com.br/fipe/api/v1/{tipo}/marcas/{codigoMarca}/modelos/{codigoModelo}/anos`
+- Avaliação por ano: `GET https://parallelum.com.br/fipe/api/v1/{tipo}/marcas/{codigoMarca}/modelos/{codigoModelo}/anos/{codigoAno}`
 
+Exemplos com `curl`:
+```bash
+# listar marcas de carros
+curl -s "https://parallelum.com.br/fipe/api/v1/carros/marcas" | jq .
 
-## 🔨 Objetivos do projeto
+# listar modelos da marca 21
+curl -s "https://parallelum.com.br/fipe/api/v1/carros/marcas/21/modelos" | jq .
 
-- O objetivo do projeto é ter um fluxo similar ao que é feito no site, porém com algumas melhorias.
-- Criaremos um projeto Spring com linha de comando, utilizando a classe Scanner para fazer interações com o usuário via terminal.
-- Solicitaremos que o usuário digite o tipo de veículo desejado (carro, caminhão ou moto).
-- Feito isso, listaremos todas as marcas daquele tipo de veículo, solicitando que o usuário escolha uma marca pelo código.
-- Após essa escolha, listaremos todos os modelos de veículos daquela marca.
-- Solicitaremos que o usuário digite um trecho do modelo que ele quer visualizar, por exemplo **PALIO**.
-- Listaremos apenas os modelos que tiverem a palavra **PALIO** no nome.
-- Usuário escolherá um modelo específico pelo código e, diferente do site, já listaremos as avaliações para **TODOS** os anos disponíveis daquele modelo, retornando uma lista de forma similar à imagem abaixo:
+# listar anos do modelo 560 (exemplo)
+curl -s "https://parallelum.com.br/fipe/api/v1/carros/marcas/21/modelos/560/anos" | jq .
 
-![image](https://github.com/jacqueline-oliveira/3257-java-desafio/assets/66698429/3d0ac772-3eff-4bad-a1fd-e7c2f34a39bc)
+# valor para ano específico
+curl -s "https://parallelum.com.br/fipe/api/v1/carros/marcas/21/modelos/560/anos/2003-1" | jq .
+```
 
+Guia de execução com "zero fricção"
+----------------------------------
+Pré-requisitos:
+- Java 21 instalado (JAVA_HOME configurado)
+- Maven ou usar o wrapper incluído (`./mvnw`)
+- Acesso à internet (consome API pública)
 
+Execução rápida:
+```bash
+# executar com o wrapper (Linux/macOS)
+./mvnw spring-boot:run
 
-## Observações:
+# ou com maven local
+mvn spring-boot:run
+```
 
-- Para realização do desafio faremos o consumo de uma API, documentada [nesse link](https://deividfortuna.github.io/fipe/).
+Gerar JAR e executar:
+```bash
+./mvnw -DskipTests package
+java -jar target/consulta-tabela-FIPE-0.0.1-SNAPSHOT.jar
+```
 
-- De acordo com o escolhido (carro, moto, ou caminhão) vamos fazer uma chamada a um dos endpoints abaixo para buscar as marcas:
+Testes
+------
+```bash
+# rodar todos os testes
+./mvnw test
 
-https://parallelum.com.br/fipe/api/v1/carros/marcas
+# (opcional) gerar relatório de cobertura: adicionar Jacoco no pom e rodar
+./mvnw test jacoco:report
+```
 
-https://parallelum.com.br/fipe/api/v1/motos/marcas
+Status do projeto: o que está implementado e próximos passos
+----------------------------------------------------------
+Implementado:
 
-https://parallelum.com.br/fipe/api/v1/caminhoes/marcas
+- Fluxo CLI completo: seleção de tipo → marcas → modelos → anos → agregação de avaliações por ano.
+- Conversão JSON → DTOs (records) e DTOs → entidades de domínio.
+- Tratamento básico de parsing numérico e erros de IO.
 
-- O retorno dessa requisição será uma lista com código e marca desejada. Caso o usuário queira por exemplo fazer uma consulta a modelos de carros da Fiat, que possui o código 21, terá que fazer uma nova requisição para o endpoint:
+Pontos a completar / melhorias:
 
-https://parallelum.com.br/fipe/api/v1/carros/marcas/21/modelos
+- Padronizar/formatar `toString()` das models para saída mais legível (feito parcialmente).
+- Paralelizar requisições por ano para reduzir latência (usar `CompletableFuture` ou ExecutorService).
+- Adicionar testes de integração (WireMock) e cobertura automatizada (JaCoCo).
+- Adicionar Dockerfile / docker-compose para execução com um único comando.
+- Expor a aplicação como REST com documentação OpenAPI/Swagger.
 
-- Feito isso, irá escolher um código de modelo, por exemplo esse **Palio Weekend Stile 1.6 mpi 16V 4p**, representado pelo código 560. Então deverá fazer uma terceira requisição para o endpoint:
-
-https://parallelum.com.br/fipe/api/v1/carros/marcas/21/modelos/560/anos
-
-- Para saber a avaliação para cada ano disponível, teremos que fazer requisições pelo código por ano, onde obteremos um retorno similar ao que é mostrado abaixo:
-
-https://parallelum.com.br/fipe/api/v1/carros/marcas/21/modelos/560/anos/2003-1
-
-![image](https://github.com/jacqueline-oliveira/3257-java-desafio/assets/66698429/0bed6f40-3112-442e-a6c5-33acd8301c6c)
-
-
-
-- Para podermos exibir em nossa aplicação as avaliações de todos os anos para esse modelo, será necessário trabalhar com as coleções e estruturas de repetição para poder exibir já todos as avaliações de todos os anos para o nosso usuário.
-- Utilize a biblioteca Jackson para a desserialização dos dados.
-- Modele as classes de acordo com o necessário para representar as marcas, modelos e dados dos veículos.
-- Relembre os conceitos vistos no curso para filtrar os modelos por um trecho do nome.
-
-
-
-Bom desafio!
+Contribuição
+----------------------
+- Contribuições são bem-vindas: abra uma issue ou PR descrevendo a mudança.
