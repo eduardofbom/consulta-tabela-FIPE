@@ -83,12 +83,15 @@ public class Vehicle {
 
     @Override
     public String toString() {
-        return this.getVehicleTypeVehString() +
-                ": " + brandVeh +
-                " " + modelVeh +
-                " " + yearVeh +
-                " " + fuelAbbreviation +
-                " | " + valueVeh +
-                " (Código fipe = " + codeFipeVeh + ")";
+        String type = this.getVehicleTypeVehString();
+        String brand = brandVeh == null ? "(marca n/a)" : brandVeh;
+        String model = modelVeh == null ? "(modelo n/a)" : modelVeh;
+        String year = (yearVeh == null || yearVeh == 0) ? "(ano n/a)" : String.valueOf(yearVeh);
+        String fuel = fuelAbbreviation == null ? "(combustível n/a)" : fuelAbbreviation;
+        String value = valueVeh == null ? "(valor n/a)" : valueVeh;
+        String code = codeFipeVeh == null ? "(código n/a)" : codeFipeVeh;
+
+        return String.format("%s — %s %s • %s • %s • %s (Fipe: %s)",
+                type, brand, model, year, fuel, value, code);
     }
 }

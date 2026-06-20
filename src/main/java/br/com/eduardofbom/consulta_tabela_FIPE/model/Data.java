@@ -24,7 +24,9 @@ public class Data {
 
     @Override
     public String toString() {
-        return "(" + code +
-                ") " + description;
+        // Formatação mais legível para exibição em console/portfólio
+        String c = code == null ? "-" : code;
+        String d = description == null ? "(sem descrição)" : description;
+        return String.format("[%s] %s", c, d);
     }
 }
